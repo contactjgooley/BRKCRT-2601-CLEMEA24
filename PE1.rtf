@@ -1,0 +1,540 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 32         No Label   10.1.78.0/24[V]  1140          aggregate/VRF\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh mpls ldp discovery\
+ Local LDP Identifier:\
+    7.7.7.7:0\
+    Discovery Sources:\
+    Interfaces:\
+        Ethernet0/2 (ldp): xmit/recv\
+            LDP Id: 1.1.1.1:0\
+        Ethernet0/3 (ldp): xmit/recv\
+            LDP Id: 4.4.4.4:0\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh run | sec ip vrf\
+ip vrf VRF\
+ rd 7:1\
+ route-target export 7:1\
+ route-target import 5:1\
+ ip vrf forwarding VRF\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh run int e0/1\
+Building configuration...\
+\
+Current configuration : 88 bytes\
+!\
+interface Ethernet0/1\
+ ip vrf forwarding VRF\
+ ip address 10.1.78.7 255.255.255.0\
+end\
+\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh run | sec VRF\
+ address-family ipv4 vrf VRF\
+  redistribute bgp 57 metric 1 1 1 1 1\
+  network 10.1.78.7 0.0.0.0\
+  autonomous-system 78\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh run | sec router\
+router eigrp 1\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute bgp 57 metric 1 1 1 1 1\
+  network 10.1.78.7 0.0.0.0\
+  autonomous-system 78\
+ exit-address-family\
+router ospf 1\
+ router-id 7.7.7.7\
+ network 7.7.7.7 0.0.0.0 area 0\
+ network 192.168.0.0 0.0.255.255 area 0\
+router bgp 57\
+ bgp router-id 7.7.7.7\
+ bgp log-neighbor-changes\
+ network 10.1.1.0 mask 255.255.255.0\
+ network 10.1.17.0 mask 255.255.255.0\
+ neighbor 5.5.5.5 remote-as 57\
+ neighbor 5.5.5.5 update-source Loopback0\
+ neighbor 5.5.5.5 next-hop-self\
+ !\
+ address-family vpnv4\
+  neighbor 5.5.5.5 activate\
+  neighbor 5.5.5.5 send-community extended\
+ exit-address-family\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute eigrp 78 metric 1\
+ exit-address-family\
+mpls ldp router-id Loopback0\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh ip bgp vpnv4 all s\
+BGP router identifier 7.7.7.7, local AS number 57\
+BGP table version is 501, main routing table version 501\
+6 network entries using 912 bytes of memory\
+6 path entries using 480 bytes of memory\
+3/3 BGP path/bestpath attribute entries using 480 bytes of memory\
+3 BGP extended community entries using 524 bytes of memory\
+0 BGP route-map cache entries using 0 bytes of memory\
+0 BGP filter-list cache entries using 0 bytes of memory\
+BGP using 2396 total bytes of memory\
+BGP activity 9/0 prefixes, 9/0 paths, scan interval 60 secs\
+\
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  S       tate/PfxRcd\
+5.5.5.5         4           57   27679   27185      501    0    0 2w2d                   2\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh ip bgp vpnv4 all\
+BGP table version is 501, local router ID is 7.7.7.7\
+Status codes: s suppressed, d damped, h history, * valid, > best, i - intern       al,\
+              r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filte       r,\
+              x best-external, a additional-path, c RIB-compressed,\
+Origin codes: i - IGP, e - EGP, ? - incomplete\
+RPKI validation codes: V valid, I invalid, N Not found\
+\
+     Network          Next Hop            Metric LocPrf Weight Path\
+Route Distinguisher: 5:1\
+ *>i 10.1.56.0/24     5.5.5.5                  1    100      0 ?\
+ *>i 10.2.1.0/24      5.5.5.5                  1    100      0 ?\
+Route Distinguisher: 7:1 (default for vrf VRF)\
+ *>  10.1.1.0/24      10.1.78.8                1         32768 ?\
+ *>i 10.1.56.0/24     5.5.5.5                  1    100      0 ?\
+ *>  10.1.78.0/24     0.0.0.0                  0         32768 ?\
+ *>i 10.2.1.0/24      5.5.5.5                  1    100      0 ?\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#ping vrf VRF 10.1.1.1 source e0/1\
+Type escape sequence to abort.\
+Sending 5, 100-byte ICMP Echos to 10.1.1.1, timeout is 2 seconds:\
+Packet sent with a source address of 10.1.78.7\
+!!!!!\
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#ping vrf VRF 10.2.1.1 source e0/1\
+Type escape sequence to abort.\
+Sending 5, 100-byte ICMP Echos to 10.2.1.1, timeout is 2 seconds:\
+Packet sent with a source address of 10.1.78.7\
+!!!!!\
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms\
+PE1#\
+PE1#\
+PE1#\
+PE1#sh bgp\
+PE1#sh bgp vpn\
+PE1#sh bgp vpnv3\
+PE1#sh bgp vpnv4 nei\
+PE1#sh bgp vpnv4su\
+PE1#sh bgp vpnv4 su\
+PE1#sh bgp vpnv4 ?\
+  multicast  Address Family Modifier\
+  unicast    Address Family Modifier\
+\
+PE1#sh bgp vpnv4 un\
+PE1#sh bgp vpnv4 unicast su\
+PE1#sh bgp vpnv4 unicast nei\
+PE1#sh bfp\
+PE1#sh bgp\
+PE1#sh bgp vpn\
+PE1#sh bgp vpnv?\
+vpnv4  vpnv6\
+\
+PE1#sh bgp vpnv4 ?\
+  multicast  Address Family Modifier\
+  unicast    Address Family Modifier\
+\
+PE1#sh bgp vpnv4 un\
+PE1#sh bgp vpnv4 unicast ?\
+  all  Display information about all VPN NLRIs\
+  rd   Display information for a route distinguisher\
+  vrf  Display information for a VPN Routing/Forwarding instance\
+\
+PE1#sh bgp vpnv4 unicast all su\
+PE1#sh bgp vpnv4 unicast all summary\
+BGP router identifier 7.7.7.7, local AS number 57\
+BGP table version is 501, main routing table version 501\
+6 network entries using 912 bytes of memory\
+6 path entries using 480 bytes of memory\
+3/3 BGP path/bestpath attribute entries using 480 bytes of memory\
+3 BGP extended community entries using 524 bytes of memory\
+0 BGP route-map cache entries using 0 bytes of memory\
+0 BGP filter-list cache entries using 0 bytes of memory\
+BGP using 2396 total bytes of memory\
+BGP activity 9/0 prefixes, 9/0 paths, scan interval 60 secs\
+\
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  S       tate/PfxRcd\
+5.5.5.5         4           57   27688   27194      501    0    0 2w3d                   2\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#\
+PE1#show run\
+Building configuration...\
+\
+Current configuration : 2139 bytes\
+!\
+version 15.4\
+service timestamps debug datetime msec\
+service timestamps log datetime msec\
+no service password-encryption\
+!\
+hostname PE1\
+!\
+boot-start-marker\
+boot-end-marker\
+!\
+!\
+!\
+no aaa new-model\
+!\
+!\
+!\
+clock timezone JST 9 0\
+mmi polling-interval 60\
+no mmi auto-configure\
+no mmi pvc\
+mmi snmp-timeout 180\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+\
+\
+!\
+ip vrf VRF\
+ rd 7:1\
+ route-target export 7:1\
+ route-target import 5:1\
+!\
+!\
+!\
+!\
+no ip domain lookup\
+ip cef\
+no ipv6 cef\
+!\
+multilink bundle-name authenticated\
+mpls label protocol ldp\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+username admin secret 5 $1$Gr8z$9wIKKzCQVQptpPIWnpMyv1\
+!\
+redundancy\
+!\
+!\
+!\
+!\
+!\
+!\
+interface Loopback0\
+ ip address 7.7.7.7 255.255.255.255\
+!\
+interface Ethernet0/0\
+ ip address 10.1.78.7 255.255.255.0\
+!\
+interface Ethernet0/1\
+ ip vrf forwarding VRF\
+ ip address 10.1.78.7 255.255.255.0\
+!\
+interface Ethernet0/2\
+ ip address 192.168.17.7 255.255.255.0\
+ ip ospf network point-to-point\
+ mpls ip\
+!\
+interface Ethernet0/3\
+ ip address 192.168.47.7 255.255.255.0\
+ ip ospf network point-to-point\
+ mpls ip\
+!\
+!\
+router eigrp 1\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute bgp 57 metric 1 1 1 1 1\
+  network 10.1.78.7 0.0.0.0\
+  autonomous-system 78\
+ exit-address-family\
+!\
+router ospf 1\
+ router-id 7.7.7.7\
+ network 7.7.7.7 0.0.0.0 area 0\
+ network 192.168.0.0 0.0.255.255 area 0\
+!\
+router bgp 57\
+ bgp router-id 7.7.7.7\
+ bgp log-neighbor-changes\
+ network 10.1.1.0 mask 255.255.255.0\
+ network 10.1.17.0 mask 255.255.255.0\
+ neighbor 5.5.5.5 remote-as 57\
+ neighbor 5.5.5.5 update-source Loopback0\
+ neighbor 5.5.5.5 next-hop-self\
+ !\
+ address-family vpnv4\
+  neighbor 5.5.5.5 activate\
+  neighbor 5.5.5.5 send-community extended\
+ exit-address-family\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute eigrp 78 metric 1\
+ exit-address-family\
+!\
+ip forward-protocol nd\
+!\
+!\
+no ip http server\
+ip route 10.1.1.0 255.255.255.0 10.1.78.8\
+!\
+!\
+!\
+mpls ldp router-id Loopback0\
+!\
+control-plane\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+alias configure sh do show\
+alias configure ping do ping\
+!\
+line con 0\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+line aux 0\
+line vty 0 4\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+ login local\
+ transport input none\
+!\
+!\
+end\
+\
+PE1#\
+PE1#ping 4.2.2.2\
+Type escape sequence to abort.\
+Sending 5, 100-byte ICMP Echos to 4.2.2.2, timeout is 2 seconds:\
+.....\
+Success rate is 0 percent (0/5)\
+PE1#\
+\
+PE1#sh run\
+Building configuration...\
+\
+Current configuration : 2139 bytes\
+!\
+version 15.4\
+service timestamps debug datetime msec\
+service timestamps log datetime msec\
+no service password-encryption\
+!\
+hostname PE1\
+!\
+boot-start-marker\
+boot-end-marker\
+!\
+!\
+!\
+no aaa new-model\
+!\
+!\
+!\
+clock timezone JST 9 0\
+mmi polling-interval 60\
+no mmi auto-configure\
+no mmi pvc\
+mmi snmp-timeout 180\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+\
+\
+!\
+ip vrf VRF\
+ rd 7:1\
+ route-target export 7:1\
+ route-target import 5:1\
+!\
+!\
+!\
+!\
+no ip domain lookup\
+ip cef\
+no ipv6 cef\
+!\
+multilink bundle-name authenticated\
+mpls label protocol ldp\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+username admin secret 5 $1$Gr8z$9wIKKzCQVQptpPIWnpMyv1\
+!\
+redundancy\
+!\
+!\
+!\
+!\
+!\
+!\
+interface Loopback0\
+ ip address 7.7.7.7 255.255.255.255\
+!\
+interface Ethernet0/0\
+ ip address 10.1.78.7 255.255.255.0\
+!\
+interface Ethernet0/1\
+ ip vrf forwarding VRF\
+ ip address 10.1.78.7 255.255.255.0\
+!\
+interface Ethernet0/2\
+ ip address 192.168.17.7 255.255.255.0\
+ ip ospf network point-to-point\
+ mpls ip\
+!\
+interface Ethernet0/3\
+ ip address 192.168.47.7 255.255.255.0\
+ ip ospf network point-to-point\
+ mpls ip\
+!\
+!\
+router eigrp 1\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute bgp 57 metric 1 1 1 1 1\
+  network 10.1.78.7 0.0.0.0\
+  autonomous-system 78\
+ exit-address-family\
+!\
+router ospf 1\
+ router-id 7.7.7.7\
+ network 7.7.7.7 0.0.0.0 area 0\
+ network 192.168.0.0 0.0.255.255 area 0\
+!\
+router bgp 57\
+ bgp router-id 7.7.7.7\
+ bgp log-neighbor-changes\
+ network 10.1.1.0 mask 255.255.255.0\
+ network 10.1.17.0 mask 255.255.255.0\
+ neighbor 5.5.5.5 remote-as 57\
+ neighbor 5.5.5.5 update-source Loopback0\
+ neighbor 5.5.5.5 next-hop-self\
+ !\
+ address-family vpnv4\
+  neighbor 5.5.5.5 activate\
+  neighbor 5.5.5.5 send-community extended\
+ exit-address-family\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute eigrp 78 metric 1\
+ exit-address-family\
+!\
+ip forward-protocol nd\
+!\
+!\
+no ip http server\
+ip route 10.1.1.0 255.255.255.0 10.1.78.8\
+!\
+!\
+!\
+mpls ldp router-id Loopback0\
+!\
+control-plane\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+alias configure sh do show\
+alias configure ping do ping\
+!\
+line con 0\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+line aux 0\
+line vty 0 4\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+ login local\
+ transport input none\
+!\
+!\
+end\
+\
+PE1#\
+}

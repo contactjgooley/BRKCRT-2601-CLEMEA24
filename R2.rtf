@@ -1,0 +1,264 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+Current configuration : 3941 bytes\
+!\
+version 15.4\
+service timestamps debug datetime msec\
+service timestamps log datetime msec\
+no service password-encryption\
+!\
+hostname R2\
+!\
+boot-start-marker\
+boot-end-marker\
+!\
+!\
+!\
+no aaa new-model\
+!\
+!\
+!\
+clock timezone PST -8 0\
+mmi polling-interval 60\
+no mmi auto-configure\
+no mmi pvc\
+mmi snmp-timeout 180\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+\
+\
+!\
+ip vrf VRF-B\
+ rd 2:2\
+!\
+ip vrf VRF-E\
+!\
+ip vrf VRF-O\
+!\
+ip vrf VRF-R\
+!\
+ip vrf VRF-S\
+!\
+!\
+!\
+!\
+no ip domain lookup\
+ip cef\
+no ipv6 cef\
+ipv6 multicast rpf use-bgp\
+!\
+multilink bundle-name authenticated\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+username admin secret 5 $1$TXC/$7OEZlfbEpqlsaCpH4POlI0\
+!\
+redundancy\
+!\
+!\
+!\
+!\
+!\
+!\
+interface Loopback1\
+ ip vrf forwarding VRF-R\
+ ip address 2.2.2.2 255.255.255.255\
+!\
+interface Loopback2\
+ ip vrf forwarding VRF-E\
+ ip address 2.2.2.2 255.255.255.255\
+!\
+interface Loopback3\
+ ip vrf forwarding VRF-O\
+ ip address 2.2.2.2 255.255.255.255\
+!\
+interface Loopback11\
+ ip vrf forwarding VRF-S\
+ ip address 2.2.2.2 255.255.255.255\
+!\
+interface Loopback102\
+ ip address 22.22.22.22 255.255.255.255\
+!\
+interface Loopback111\
+ ip vrf forwarding VRF-B\
+ ip address 2.2.2.2 255.255.255.255\
+!\
+interface Tunnel12\
+ ip vrf forwarding VRF-S\
+ ip address 10.1.12.2 255.255.255.0\
+ tunnel source Loopback102\
+ tunnel destination 11.11.11.11\
+!\
+interface Ethernet0/0\
+ ip address 10.1.12.2 255.255.255.0\
+ ip ospf network point-to-point\
+!\
+interface Ethernet0/0.12\
+ encapsulation dot1Q 12\
+ ip vrf forwarding VRF-R\
+ ip address 10.1.12.2 255.255.255.0\
+!\
+interface Ethernet0/0.23\
+ encapsulation dot1Q 23\
+ ip vrf forwarding VRF-R\
+ ip address 10.1.23.2 255.255.255.0\
+!\
+interface Ethernet0/0.112\
+ encapsulation dot1Q 112\
+ ip vrf forwarding VRF-E\
+ ip address 10.1.112.2 255.255.255.0\
+!\
+interface Ethernet0/0.123\
+ encapsulation dot1Q 123\
+ ip vrf forwarding VRF-E\
+ ip address 10.1.123.2 255.255.255.0\
+!\
+interface Ethernet0/0.212\
+ encapsulation dot1Q 212\
+ ip vrf forwarding VRF-O\
+ ip address 10.1.212.2 255.255.255.0\
+ ip ospf network point-to-point\
+!\
+interface Ethernet0/0.223\
+ encapsulation dot1Q 223\
+ ip vrf forwarding VRF-O\
+ ip address 10.1.223.2 255.255.255.0\
+ ip ospf network point-to-point\
+!\
+interface Ethernet0/1\
+ no ip address\
+ shutdown\
+!\
+interface Ethernet0/2\
+ no ip address\
+ shutdown\
+!\
+interface Ethernet0/3\
+ no ip address\
+ shutdown\
+!\
+interface Serial1/0\
+ no ip address\
+ encapsulation frame-relay\
+ no keepalive\
+ serial restart-delay 0\
+!\
+interface Serial1/0.12 point-to-point\
+ ip vrf forwarding VRF-B\
+ ip address 10.1.12.2 255.255.255.0\
+ frame-relay interface-dlci 201\
+!\
+interface Serial1/1\
+ no ip address\
+ encapsulation frame-relay\
+ shutdown\
+ serial restart-delay 0\
+!\
+interface Serial1/2\
+ no ip address\
+ shutdown\
+ serial restart-delay 0\
+!\
+interface Serial1/3\
+ no ip address\
+ shutdown\
+ serial restart-delay 0\
+!\
+!\
+router eigrp 10\
+ !\
+ address-family ipv4 vrf VRF-E\
+  network 2.2.2.2 0.0.0.0\
+  network 10.1.112.0 0.0.0.255\
+  network 10.1.123.0 0.0.0.255\
+  autonomous-system 10\
+ exit-address-family\
+ auto-summary\
+!\
+router ospf 2 vrf VRF-O\
+ network 2.2.2.2 0.0.0.0 area 1\
+ network 10.1.212.0 0.0.0.255 area 0\
+ network 10.1.223.0 0.0.0.255 area 0\
+!\
+router ospf 1\
+ network 2.2.2.2 0.0.0.0 area 1\
+ network 10.1.12.0 0.0.0.255 area 0\
+ network 22.22.22.22 0.0.0.0 area 1\
+!\
+router rip\
+ passive-interface default\
+ !\
+ address-family ipv4 vrf VRF-R\
+  network 2.0.0.0\
+  network 10.0.0.0\
+  neighbor 10.1.23.3\
+  neighbor 10.1.12.1\
+  no auto-summary\
+  version 2\
+ exit-address-family\
+!\
+router bgp 2\
+ bgp log-neighbor-changes\
+ !\
+ address-family ipv4 vrf VRF-B\
+  bgp router-id 2.2.2.2\
+  network 2.2.2.2 mask 255.255.255.255\
+  neighbor 10.1.12.1 remote-as 1\
+  neighbor 10.1.12.1 activate\
+ exit-address-family\
+!\
+ip forward-protocol nd\
+!\
+!\
+no ip http server\
+ip route vrf VRF-S 1.1.1.1 255.255.255.255 10.1.12.1\
+!\
+!\
+!\
+!\
+control-plane\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+alias configure sh do show\
+alias configure ping do ping\
+alias configure trace do trace\
+!\
+line con 0\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+line aux 0\
+line vty 0 4\
+ login\
+ transport input all\
+!\
+!\
+end\
+\
+}

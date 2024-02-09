@@ -1,0 +1,158 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+Current configuration : 2058 bytes\
+!\
+version 15.4\
+service timestamps debug datetime msec\
+service timestamps log datetime msec\
+no service password-encryption\
+!\
+hostname PE2\
+!\
+boot-start-marker\
+boot-end-marker\
+!\
+!\
+!\
+no aaa new-model\
+!\
+!\
+!\
+clock timezone JST 9 0\
+mmi polling-interval 60\
+no mmi auto-configure\
+no mmi pvc\
+mmi snmp-timeout 180\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+\
+\
+!\
+ip vrf VRF\
+ rd 5:1\
+ route-target export 5:1\
+ route-target import 7:1\
+!\
+!\
+!\
+!\
+no ip domain lookup\
+ip cef\
+no ipv6 cef\
+!\
+multilink bundle-name authenticated\
+mpls label protocol ldp\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+username admin secret 5 $1$mfez$j05mNhpm/o488aXZZF03D.\
+!\
+redundancy\
+!\
+!\
+!\
+!\
+!\
+!\
+interface Loopback0\
+ ip address 5.5.5.5 255.255.255.255\
+!\
+interface Ethernet0/0\
+ ip address 10.1.56.5 255.255.255.0\
+!\
+interface Ethernet0/1\
+ ip vrf forwarding VRF\
+ ip address 10.1.56.5 255.255.255.0\
+!\
+interface Ethernet0/2\
+ ip address 192.168.25.5 255.255.255.0\
+ ip ospf network point-to-point\
+ mpls ip\
+!\
+interface Ethernet0/3\
+ ip address 192.168.35.5 255.255.255.0\
+ ip ospf network point-to-point\
+ mpls ip\
+!\
+router ospf 1\
+ router-id 5.5.5.5\
+ network 5.5.5.5 0.0.0.0 area 0\
+ network 192.168.0.0 0.0.255.255 area 0\
+!\
+router bgp 57\
+ bgp router-id 5.5.5.5\
+ bgp log-neighbor-changes\
+ network 10.1.56.0 mask 255.255.255.0\
+ network 10.2.1.0 mask 255.255.255.0\
+ neighbor 7.7.7.7 remote-as 57\
+ neighbor 7.7.7.7 update-source Loopback0\
+ neighbor 7.7.7.7 next-hop-self\
+ !\
+ address-family vpnv4\
+  neighbor 7.7.7.7 activate\
+  neighbor 7.7.7.7 send-community extended\
+ exit-address-family\
+ !\
+ address-family ipv4 vrf VRF\
+  redistribute connected metric 1\
+  redistribute static metric 1\
+ exit-address-family\
+!\
+ip forward-protocol nd\
+!\
+!\
+no ip http server\
+ip route 10.2.1.0 255.255.255.0 10.1.56.6\
+ip route vrf VRF 10.2.1.0 255.255.255.0 10.1.56.6\
+!\
+!\
+!\
+mpls ldp router-id Loopback0\
+!\
+control-plane\
+!\
+!\
+!\
+!\
+!\
+!\
+!\
+alias configure sh do show\
+alias configure ping do ping\
+!\
+line con 0\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+line aux 0\
+line vty 0 4\
+ exec-timeout 0 0\
+ privilege level 15\
+ logging synchronous\
+ login local\
+ transport input none\
+!\
+!\
+end\
+}
